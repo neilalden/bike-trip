@@ -21,7 +21,7 @@ const App = () => {
           fontWeight: 'bold',
           color: '#000',
         }}>
-        Please allow location permission
+        Please turn on location services and allow location permission
       </Text>
     );
   }

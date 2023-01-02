@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     overflow: 'hidden',
     height: SIZE.x50,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: COLORS.BLACK,
   },
   buttonText: {
     marginTop: SIZE.x12,
@@ -83,6 +83,6 @@ const styles = StyleSheet.create({
     height: SIZE.x50,
     backgroundColor: 'transparent',
     borderWidth: SIZE.x2,
-    borderColor: COLORS.WHITE,
+    borderColor: COLORS.BLACK,
   },
 });

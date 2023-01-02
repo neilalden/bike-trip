@@ -1,22 +1,27 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {Image, ScrollView, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import MapboxDirectionsFactory from '@mapbox/mapbox-sdk/services/directions';
 import {MAPBOX_API_KEY} from '@env';
 import Screen from '../components/Screen';
 import Header from '../components/Header';
-import {Button} from '../components/Buttons';
+import {Button, ButtonOutline} from '../components/Buttons';
 import {COLORS} from '../common/utils/colors';
 import {DestinationsContext} from '../context/DestinationsContext';
 import {lineString as makeLineString} from '@turf/helpers';
 import {ROUTES} from '../common/routes';
 import {useNavigation} from '@react-navigation/native';
 import {useEffect} from 'react';
-import {SIZE} from '../common/utils/size';
+import {SIZE, WINDOW_HEIGHT} from '../common/utils/size';
 import {Difficulty} from '../common/constants/difficulty';
 import {FONT_WEIGHT} from '../common/utils/font';
 import IMAGES from '../common/images';
 import Icon from '../components/Icon';
+import {STARS} from '../common/constants/ratings';
+import {TextInput} from '../components/TextInput';
+import {updateDatabase} from '../functions/database/updateDatabase';
+import {createFromDatabase} from '../functions/database/createFromDatabase';
+import {AuthContext} from '../context/AuthContext';
 const directionsClient = MapboxDirectionsFactory({accessToken: MAPBOX_API_KEY});
 
 const DestinationDetailsScreen = props => {
@@ -31,20 +36,53 @@ const DestinationDetailsScreen = props => {
     userLocation,
     setZoomLevel,
     destinationsImage,
+    reviews,
+    setRefresh,
   } = React.useContext(DestinationsContext);
+  const {user} = React.useContext(AuthContext);
 
   const [data, setData] = React.useState();
+  const [review, setReview] = React.useState('');
+  const [rate, setRate] = React.useState();
   useEffect(() => {
     (async () => {
       try {
         const distance = await getDistance(userLocation, params);
         setData(distance);
       } catch (e) {
-        console.log(String(e));
+        console.error(e);
       }
     })();
   }, []);
-
+  const handleSubmit = async () => {
+    const numRate = Number(rate);
+    if (typeof numRate === 'number') {
+      if (numRate > 0 && numRate <= 5) {
+        const currentRate = params.rating.rate ?? 0;
+        let currentRateBy = params.rating.rateBy ?? 0;
+        currentRateBy += 1;
+        const updateData = {
+          rate: Math.round((currentRate + numRate) / currentRateBy),
+          rateBy: currentRateBy,
+        };
+        alert(await updateDatabase('Destinations', updateData, params.id));
+        const reviewData = {
+          destinationID: params.id,
+          rate: numRate,
+          review: review,
+          userID: user.uid,
+        };
+        createFromDatabase(reviewData, 'Reviews');
+        setReview('');
+        setRate();
+        setRefresh(prev => !prev);
+      } else {
+        alert('rating has to be between 1-5');
+      }
+    } else {
+      alert('rating is not a number');
+    }
+  };
   const handlePress = () => {
     (async () => {
       try {
@@ -52,8 +90,8 @@ const DestinationDetailsScreen = props => {
         const reqOptions = {
           waypoints: [
             {coordinates: userLocation},
-            {coordinates: params.coordinates},
-            // {coordinates: [userLocation[0] + 0.002, userLocation[1] + 0.001]},
+            // {coordinates: params.coordinates},
+            {coordinates: [userLocation[0] + 0.002, userLocation[1] + 0.001]},
           ],
           profile: 'driving',
           geometries: 'geojson',
@@ -80,12 +118,6 @@ const DestinationDetailsScreen = props => {
     destinationsImage && destinationsImage[params.id]
       ? {uri: destinationsImage[params.id]}
       : IMAGES.ic_app;
-  const stars = [];
-  if (params?.rating) {
-    for (let i = 0; i < params.rating.rate; i++) {
-      stars.push(i);
-    }
-  }
   return (
     <React.Fragment>
       <Header />
@@ -94,29 +126,114 @@ const DestinationDetailsScreen = props => {
           <Image source={image} style={styles.cardImage} />
           <View style={styles.cardDescriptionContainer}>
             <Text style={styles.cardTitle}>{params.name}</Text>
-            <View style={styles.ratingContainer}>
-              {stars.map((_, i) => {
+            <View style={styles.flexRow}>
+              <View style={styles.ratingContainer}>
+                {params?.rating &&
+                  STARS.map((_, i) => {
+                    if (i < params.rating.rate) {
+                      return (
+                        <Icon
+                          size={SIZE.x20}
+                          source={IMAGES.ic_star_fill}
+                          key={i}
+                        />
+                      );
+                    } else {
+                      return (
+                        <Icon size={SIZE.x20} source={IMAGES.ic_star} key={i} />
+                      );
+                    }
+                  })}
+              </View>
+              {params.difficulty ? (
+                <Text style={styles.difficultyText}>
+                  {Difficulty[params.difficulty]}
+                </Text>
+              ) : null}
+            </View>
+            {data ? (
+              <View style={styles.flexRow}>
+                <Text style={styles.textPrimaryTitle}>
+                  {String((data.distance / 1000).toFixed(2))} km away
+                </Text>
+                <Text style={styles.textPrimaryTitle}>
+                  {String((data.duration / 60).toFixed(2))} minute ride
+                </Text>
+              </View>
+            ) : null}
+            <View style={styles.flexRow}>
+              <Text style={styles.textPrimaryTitle}>
+                Recommended bike :{' '}
+                {params.recommended_bike ? params.recommended_bike : 'N/A'}
+              </Text>
+            </View>
+            <View style={styles.flexRow}>
+              <Text style={styles.textPrimaryTitle}>
+                Near by to :{' '}
+                {params.near_by_to
+                  ? String(params.near_by_to).replaceAll(',', ', ')
+                  : 'N/A'}
+              </Text>
+            </View>
+          </View>
+          {reviews.length > 0 ? (
+            <ScrollView>
+              <Text style={[styles.cardTitle, {margin: SIZE.x10}]}>
+                REVIEWS
+              </Text>
+              {reviews.map((review, index) => {
+                if (review.destinationID !== params.id) return;
                 return (
-                  <Icon size={SIZE.x20} source={IMAGES.ic_star_fill} key={i} />
+                  <ScrollView key={index} style={styles.reviewCard}>
+                    <View style={styles.ratingContainer}>
+                      {STARS.map((_, i) => {
+                        if (i < review.rate) {
+                          return (
+                            <Icon
+                              size={SIZE.x20}
+                              source={IMAGES.ic_star_fill}
+                              key={i}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Icon
+                              size={SIZE.x20}
+                              source={IMAGES.ic_star}
+                              key={i}
+                            />
+                          );
+                        }
+                      })}
+                    </View>
+                    <Text style={styles.textSecondaryTitle}>
+                      {review.review}
+                    </Text>
+                  </ScrollView>
                 );
               })}
-            </View>
-            {params.difficulty ? (
-              <Text style={styles.difficultyText}>
-                {Difficulty[params.difficulty]}
-              </Text>
-            ) : null}
-            {data ? (
-              <React.Fragment>
-                <Text style={styles.difficultyText}>
-                  {String((data.distance / 10).toFixed(2))} km away
-                </Text>
-                <Text style={styles.difficultyText}>
-                  {String((data.duration / 10).toFixed(2))} minute ride
-                </Text>
-              </React.Fragment>
-            ) : null}
-          </View>
+            </ScrollView>
+          ) : null}
+        </View>
+        <View style={styles.writeReviewCard}>
+          <Text style={styles.writeReviewCardTitle}>WRITE REVIEW</Text>
+          <TextInput
+            value={review}
+            onChangeText={text => setReview(text)}
+            label="Review"
+          />
+          <TextInput
+            value={rate}
+            onChangeText={text => setRate(text)}
+            label="Rate from 1-5"
+            keyboardType="number-pad"
+          />
+          <ButtonOutline
+            text={'SUBMIT'}
+            containerStyle={styles.writeReviewButtonContainer}
+            textStyle={styles.writeReviewButtonText}
+            onPress={handleSubmit}
+          />
         </View>
       </Screen>
       {!tripStarted ? (
@@ -133,57 +250,12 @@ const DestinationDetailsScreen = props => {
 
 export default DestinationDetailsScreen;
 
-const styles = StyleSheet.create({
-  textPrimaryTitle: {
-    fontWeight: '900',
-    color: COLORS.BLACK,
-    fontSize: SIZE.x20,
-  },
-  textSecondaryTitle: {
-    fontWeight: '600',
-    color: COLORS.BLACK,
-    fontSize: SIZE.x16,
-  },
-  card: {
-    height: SIZE.x500,
-    width: SIZE.p96,
-    marginTop: SIZE.x10,
-    backgroundColor: COLORS.WHITE,
-    alignSelf: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.8,
-    shadowRadius: 1,
-  },
-  cardImage: {
-    height: SIZE.x150,
-    width: SIZE.p100,
-  },
-  cardDescriptionContainer: {
-    margin: SIZE.x10,
-  },
-  cardTitle: {
-    fontSize: SIZE.x22,
-    fontWeight: FONT_WEIGHT.x600,
-    color: COLORS.BLACK,
-  },
-  ratingContainer: {
-    marginTop: SIZE.x2,
-    flexDirection: 'row',
-  },
-  difficultyText: {
-    marginTop: SIZE.x2,
-    fontSize: SIZE.x18,
-    color: COLORS.BLACK,
-  },
-});
-
 const getDistance = async (userLocation, destination) => {
   const reqOptions = {
     waypoints: [
       {coordinates: userLocation},
-      {coordinates: destination.coordinates},
+      //   {coordinates: destination.coordinates},
+      {coordinates: [userLocation[0] + 0.002, userLocation[1] + 0.001]},
     ],
     profile: 'driving',
     geometries: 'geojson',
@@ -202,3 +274,96 @@ const getDistance = async (userLocation, destination) => {
     duration,
   };
 };
+
+const styles = StyleSheet.create({
+  textPrimaryTitle: {
+    color: COLORS.BLACK,
+    fontSize: SIZE.x20,
+  },
+  textSecondaryTitle: {
+    fontWeight: '600',
+    color: COLORS.BLACK,
+    fontSize: SIZE.x16,
+  },
+  card: {
+    width: SIZE.p96,
+    margin: SIZE.x10,
+    height: WINDOW_HEIGHT * 0.8,
+    backgroundColor: COLORS.WHITE,
+    alignSelf: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.8,
+    shadowRadius: 1,
+    overflow: 'hidden',
+  },
+  cardImage: {
+    height: SIZE.x200,
+    width: SIZE.p150,
+    alignSelf: 'center',
+  },
+  cardDescriptionContainer: {
+    margin: SIZE.x10,
+  },
+  cardTitle: {
+    fontSize: SIZE.x22,
+    fontWeight: FONT_WEIGHT.x600,
+    color: COLORS.BLACK,
+  },
+  ratingContainer: {
+    marginTop: SIZE.x4,
+    flexDirection: 'row',
+  },
+  difficultyText: {
+    marginTop: SIZE.x4,
+    fontSize: SIZE.x18,
+    color: COLORS.BLACK,
+    fontWeight: FONT_WEIGHT.x600,
+  },
+  flexRow: {
+    marginTop: SIZE.x4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  reviewCard: {
+    width: SIZE.p96,
+    margin: SIZE.x10,
+    padding: SIZE.x10,
+    backgroundColor: COLORS.WHITE,
+    alignSelf: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.8,
+    shadowRadius: 1,
+    maxHeight: SIZE.x200,
+    minHeight: SIZE.x50,
+  },
+  writeReviewCard: {
+    width: SIZE.p96,
+    margin: SIZE.x10,
+    padding: SIZE.x10,
+    backgroundColor: COLORS.WHITE,
+    alignSelf: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.8,
+    shadowRadius: 1,
+    height: SIZE.x300,
+  },
+  writeReviewCardTitle: {
+    fontSize: SIZE.x22,
+    fontWeight: FONT_WEIGHT.x600,
+    color: COLORS.BLACK,
+    textAlign: 'center',
+  },
+  writeReviewButtonContainer: {
+    borderColor: COLORS.BLUE,
+    marginVertical: SIZE.x20,
+  },
+  writeReviewButtonText: {
+    color: COLORS.BLUE,
+  },
+});

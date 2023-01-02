@@ -13,8 +13,8 @@ export const TextInput = props => {
   const fontSize = props.fontSize ?? SIZE.x22;
   const labelFontSize = props.labelFontSize ?? SIZE.x16;
   const tintColor = props.tintColor ?? COLORS.BLUE;
-  const baseColor = props.baseColor ?? COLORS.WHITE;
-  const textColor = props.textColor ?? COLORS.WHITE;
+  const baseColor = props.baseColor ?? COLORS.BLACK;
+  const textColor = props.textColor ?? COLORS.BLACK;
   const keyboardtype = props.keyboardtype ?? 'default';
   const secureTextEntry = props.secureTextEntry ?? false;
   if (onChangeText === undefined || label === undefined)

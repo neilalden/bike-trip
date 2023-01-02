@@ -1,5 +1,5 @@
 export const Difficulty = {
-  1: 'EASY',
-  2: 'MEDIUM',
-  3: 'HARD',
+  1: 'EASY RIDE',
+  2: 'MEDIUM RIDE',
+  3: 'HARD RIDE',
 };

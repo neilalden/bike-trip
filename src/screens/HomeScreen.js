@@ -13,6 +13,7 @@ import Icon from '../components/Icon';
 import {Difficulty} from '../common/constants/difficulty';
 import {useNavigation} from '@react-navigation/native';
 import {ROUTES} from '../common/routes';
+import {STARS} from '../common/constants/ratings';
 const HomeScreen = () => {
   const {destinations, destinationsImage} =
     React.useContext(DestinationsContext);
@@ -29,12 +30,6 @@ const HomeScreen = () => {
               destinationsImage && destinationsImage[destination.id]
                 ? {uri: destinationsImage[destination.id]}
                 : IMAGES.ic_app;
-            const stars = [];
-            if (destination?.rating) {
-              for (let i = 0; i < destination.rating.rate; i++) {
-                stars.push(i);
-              }
-            }
             return (
               <TouchableOpacity
                 key={index}
@@ -44,13 +39,26 @@ const HomeScreen = () => {
                 <View style={styles.cardDescriptionContainer}>
                   <Text style={styles.cardTitle}>{destination.name}</Text>
                   <View style={styles.ratingContainer}>
-                    {stars.map((_, i) => (
-                      <Icon
-                        size={SIZE.x20}
-                        source={IMAGES.ic_star_fill}
-                        key={i}
-                      />
-                    ))}
+                    {destination.rating &&
+                      STARS.map((_, i) => {
+                        if (i < destination.rating.rate) {
+                          return (
+                            <Icon
+                              size={SIZE.x20}
+                              source={IMAGES.ic_star_fill}
+                              key={i}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Icon
+                              size={SIZE.x20}
+                              source={IMAGES.ic_star}
+                              key={i}
+                            />
+                          );
+                        }
+                      })}
                   </View>
                   {destination.difficulty ? (
                     <Text style={styles.difficultyText}>

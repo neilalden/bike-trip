@@ -1,6 +1,9 @@
 import firestore from '@react-native-firebase/firestore';
 
-export const fetchUser = async (id, collection): Promise<undefined | any> => {
+export const fetchUser = async (
+  id,
+  collection = 'Users',
+): Promise<undefined | any> => {
   try {
     const res = await firestore().collection(collection).doc(id).get();
     const resData = res.data();

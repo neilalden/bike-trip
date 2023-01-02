@@ -1,0 +1,22 @@
+const IMAGES = {
+  ic_add: require('../assets/img/ic_add.png'),
+  ic_app: require('../assets/img/ic_app.png'),
+  ic_account: require('../assets/img/ic_account.png'),
+  ic_account_white: require('../assets/img/ic_account_white.png'),
+  ic_background: require('../assets/img/ic_background.jpg'),
+  ic_back: require('../assets/img/ic_back.png'),
+  ic_bell: require('../assets/img/ic_bell.png'),
+  ic_bookmark: require('../assets/img/ic_bookmark.png'),
+  ic_browser: require('../assets/img/ic_browser.png'),
+  ic_bulb: require('../assets/img/ic_bulb.png'),
+  ic_home: require('../assets/img/ic_home.png'),
+  ic_home_white: require('../assets/img/ic_home_white.png'),
+  ic_map: require('../assets/img/ic_map.png'),
+  ic_map_white: require('../assets/img/ic_map_white.png'),
+  ic_person: require('../assets/img/ic_person.png'),
+  ic_settings: require('../assets/img/ic_settings.png'),
+  ic_settings_white: require('../assets/img/ic_settings_white.png'),
+  ic_star: require('../assets/img/ic_star.png'),
+  ic_star_fill: require('../assets/img/ic_star_fill.png'),
+};
+export default IMAGES;

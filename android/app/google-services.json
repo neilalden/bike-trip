@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "158395749969",
+    "project_id": "bike-tripped",
+    "storage_bucket": "bike-tripped.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:158395749969:android:71ffdbe2a62d5d465c4a70",
+        "android_client_info": {
+          "package_name": "com.bike_trip"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "158395749969-id08r5deks45lglr459ncabt36jbue7l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bike_trip",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "158395749969-qe9hj9fe0cgrho5v3629m6vnvup0ga52.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCTBNQFgvpyCL-nZ5-ZOn7eXLWjicixZc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "158395749969-qe9hj9fe0cgrho5v3629m6vnvup0ga52.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

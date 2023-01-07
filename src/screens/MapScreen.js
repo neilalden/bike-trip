@@ -3,7 +3,7 @@ import React from 'react';
 import Screen from '../components/Screen';
 import {DestinationsContext} from '../context/DestinationsContext';
 import BottomNav from '../components/BottomNav';
-import {ButtonOutline} from '../components/Buttons';
+import {Button} from '../components/Buttons';
 import Map from '../components/Map';
 import {COLORS} from '../common/utils/colors';
 
@@ -14,10 +14,11 @@ const MapScreen = () => {
     <React.Fragment>
       <Map />
       {tripStarted === true ? (
-        <ButtonOutline
+        <Button
           onPress={stopTrip}
           text={'STOP TRIP'}
           textStyle={{color: COLORS.BLUE}}
+          containerStyle={{backgroundColor: COLORS.WHITE}}
         />
       ) : null}
       <BottomNav />

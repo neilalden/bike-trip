@@ -1,4 +1,4 @@
-import {Image, ImageBackground, StyleSheet, Text} from 'react-native';
+import {Image, ImageBackground, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import Screen from '../components/Screen';
 import {Button} from '../components/Buttons';
@@ -18,32 +18,40 @@ const LoginScreen = () => {
     <ImageBackground source={IMAGES.ic_background} style={styles.container}>
       <Screen
         style={{
-          backgroundColor: 'rgba(0,0,0,.5)',
           width: '100%',
           marginLeft: 0,
         }}>
         <Header />
-        <Image source={IMAGES.ic_app} style={styles.icon} />
-        <Text style={[styles.title, TEXT_SHADOW]}>LOGIN</Text>
-        <TextInput
-          value={email}
-          onChangeText={text => setEmail(text)}
-          label="Email"
-          containerStyle={styles.textInputContainer}
-        />
-        <TextInput
-          secureTextEntry={true}
-          value={password}
-          onChangeText={text => setPassword(text)}
-          label="Password"
-          containerStyle={styles.textInputContainer}
-        />
-        <Button
-          text={'LOGIN'}
-          onPress={() => signIn(email, password)}
-          containerStyle={styles.buttonContainer}
-          textStyle={styles.buttoText}
-        />
+
+        <View
+          style={{
+            backgroundColor: 'rgba(255  ,255  ,255  ,.35)',
+            width: SIZE.p90,
+            paddingBottom: SIZE.x20,
+            alignSelf: 'center',
+          }}>
+          <Image source={IMAGES.ic_app} style={styles.icon} />
+          <Text style={[styles.title, TEXT_SHADOW]}>LOGIN</Text>
+          <TextInput
+            value={email}
+            onChangeText={text => setEmail(text)}
+            label="Email"
+            containerStyle={styles.textInputContainer}
+          />
+          <TextInput
+            secureTextEntry={true}
+            value={password}
+            onChangeText={text => setPassword(text)}
+            label="Password"
+            containerStyle={styles.textInputContainer}
+          />
+          <Button
+            text={'LOGIN'}
+            onPress={() => signIn(email, password)}
+            containerStyle={styles.buttonContainer}
+            textStyle={styles.buttoText}
+          />
+        </View>
       </Screen>
     </ImageBackground>
   );

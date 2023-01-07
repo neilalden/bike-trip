@@ -1,6 +1,13 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {SafeAreaView, StyleSheet} from 'react-native';
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import IMAGES from '../../src/common/images';
 import {MAPBOX_API_KEY} from '@env';
@@ -9,6 +16,8 @@ import Icon from './Icon';
 import {SIZE} from '../common/utils/size';
 import {COLORS} from '../common/utils/colors';
 import {renderDestinationPoint, renderRoute, renderStart} from './Path';
+import {ROUTES} from '../common/routes';
+import {useNavigation} from '@react-navigation/native';
 MapboxGL.setAccessToken(MAPBOX_API_KEY);
 
 const App = () => {
@@ -21,8 +30,26 @@ const App = () => {
     userLocation,
     setUserLocation,
     zoomLevel,
+    setSegway,
+    segway,
   } = React.useContext(DestinationsContext);
   const CameraRef = React.useRef(null);
+  const navigation = useNavigation();
+  const onPressSegway = dest => {
+    if (!tripStarted) return;
+    for (let i = 0; i < segway.length; i++) {
+      if (
+        dest.coordinates[0] === segway[i].coordinates[0] &&
+        dest.coordinates[1] === segway[i].coordinates[1]
+      ) {
+        let copy = [...segway];
+        copy.splice(i, 1);
+        setSegway(copy);
+        return;
+      }
+    }
+    setSegway(prev => [...prev, {coordinates: dest.coordinates}]);
+  };
 
   const onUserLocationUpdate = loc => {
     setUserLocation([loc.coords.longitude, loc.coords.latitude]);
@@ -36,6 +63,9 @@ const App = () => {
       });
     }
   }
+  const onPressViewDetails = destination => {
+    navigation.navigate(ROUTES.DESTINATION_DETAILS_SCREEN, destination);
+  };
   return (
     <SafeAreaView style={styles.page}>
       <MapboxGL.MapView
@@ -85,17 +115,34 @@ const App = () => {
             return (
               <MapboxGL.MarkerView
                 key={String(index)}
+                id="pointAnnotation"
                 coordinate={_destination.coordinates}>
-                <Icon
-                  source={image}
-                  size={SIZE.x125}
-                  imageStyle={{
-                    borderWidth: SIZE.x4,
-                    borderRadius: SIZE.x4,
-                    borderColor: COLORS.BLUE,
-                    resizeMode: 'cover',
-                  }}
-                />
+                {_destination.name === 'convenience store' ? (
+                  <Icon
+                    onPress={
+                      tripStarted ? () => onPressSegway(_destination) : null
+                    }
+                    source={IMAGES.ic_7_eleven}
+                    size={SIZE.x50}
+                    imageStyle={{
+                      borderWidth: SIZE.x4,
+                      borderRadius: SIZE.x4,
+                      resizeMode: 'cover',
+                    }}
+                  />
+                ) : (
+                  <Icon
+                    source={image}
+                    size={SIZE.x80}
+                    onPress={() => onPressViewDetails(_destination)}
+                    imageStyle={{
+                      borderWidth: SIZE.x4,
+                      borderRadius: SIZE.x4,
+                      borderColor: COLORS.BLUE,
+                      resizeMode: 'cover',
+                    }}
+                  />
+                )}
               </MapboxGL.MarkerView>
             );
           })}
@@ -107,7 +154,6 @@ const App = () => {
   );
 };
 export default App;
-
 const styles = StyleSheet.create({
   page: {
     flex: 1,

@@ -1,8 +1,8 @@
 /* eslint-disable prettier/prettier */
-import {Image, ImageBackground, StyleSheet, Text} from 'react-native';
+import {Image, ImageBackground, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import Screen from '../components/Screen';
-import {ButtonOutline} from '../components/Buttons';
+import {Button} from '../components/Buttons';
 import {useNavigation} from '@react-navigation/native';
 import Header from '../components/Header';
 import {TEXT_SHADOW} from '../common/utils/styles';
@@ -22,51 +22,61 @@ const RegisterScreen = () => {
   const [confirmPassword, setConfirmPassword] = React.useState();
   return (
     <ImageBackground source={IMAGES.ic_background} style={styles.container}>
-      <Screen
-        style={{
-          backgroundColor: 'rgba(0,0,0,.5)',
-          width: '100%',
-          marginLeft: 0,
-        }}>
+      <Screen>
         <Header />
-        <Image source={IMAGES.ic_app} style={styles.icon} />
-        <Text style={[styles.title, TEXT_SHADOW]}>REGISTER</Text>
-        <TextInput
-          value={name}
-          onChangeText={text => setname(text)}
-          label="Name"
-        />
-        <TextInput
-          value={email}
-          onChangeText={text => setEmail(text)}
-          label="Email"
-          keyboardtype="email-address"
-        />
-        <TextInput
-          value={phoneNumber}
-          onChangeText={text => setPhoneNumber(text)}
-          label="Phone number"
-          keyboardtype="phone-pad"
-        />
-        <TextInput
-          secureTextEntry={true}
-          value={password}
-          onChangeText={text => setPassword(text)}
-          label="Password"
-        />
-        <TextInput
-          secureTextEntry={true}
-          value={confirmPassword}
-          onChangeText={text => setConfirmPassword(text)}
-          label="Confirm Password"
-        />
-        <ButtonOutline
-          text={'REGISTER'}
-          containerStyle={styles.buttonContainer}
-          onPress={() =>
-            accountRegister(name, email, phoneNumber, password, confirmPassword)
-          }
-        />
+
+        <View
+          style={{
+            backgroundColor: 'rgba(255  ,255  ,255  ,.35)',
+            width: SIZE.p90,
+            paddingBottom: SIZE.x20,
+            alignSelf: 'center',
+          }}>
+          <Image source={IMAGES.ic_app} style={styles.icon} />
+          <Text style={[styles.title, TEXT_SHADOW]}>REGISTER</Text>
+          <TextInput
+            value={name}
+            onChangeText={text => setname(text)}
+            label="Name"
+          />
+          <TextInput
+            value={email}
+            onChangeText={text => setEmail(text)}
+            label="Email"
+            keyboardtype="email-address"
+          />
+          <TextInput
+            value={phoneNumber}
+            onChangeText={text => setPhoneNumber(text)}
+            label="Phone number"
+            keyboardtype="phone-pad"
+          />
+          <TextInput
+            secureTextEntry={true}
+            value={password}
+            onChangeText={text => setPassword(text)}
+            label="Password"
+          />
+          <TextInput
+            secureTextEntry={true}
+            value={confirmPassword}
+            onChangeText={text => setConfirmPassword(text)}
+            label="Confirm Password"
+          />
+          <Button
+            text={'REGISTER'}
+            containerStyle={styles.buttonContainer}
+            onPress={() =>
+              accountRegister(
+                name,
+                email,
+                phoneNumber,
+                password,
+                confirmPassword,
+              )
+            }
+          />
+        </View>
       </Screen>
     </ImageBackground>
   );
@@ -98,5 +108,6 @@ const styles = StyleSheet.create({
     marginVertical: SIZE.x30,
     width: SIZE.x300,
     alignSelf: 'center',
+    backgroundColor: COLORS.BLUE,
   },
 });

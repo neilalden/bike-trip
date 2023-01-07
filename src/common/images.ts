@@ -1,4 +1,5 @@
 const IMAGES = {
+  ic_7_eleven: require('../assets/img/ic_7_eleven.png'),
   ic_add: require('../assets/img/ic_add.png'),
   ic_app: require('../assets/img/ic_app.png'),
   ic_account: require('../assets/img/ic_account.png'),

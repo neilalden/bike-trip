@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, TouchableOpacity, Image} from 'react-native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {DestinationsContext} from '../context/DestinationsContext';
 import Map from '../components/Map';
 import BottomNav from '../components/BottomNav';
@@ -30,6 +30,7 @@ const HomeScreen = () => {
               destinationsImage && destinationsImage[destination.id]
                 ? {uri: destinationsImage[destination.id]}
                 : IMAGES.ic_app;
+            if (destination.name === 'convenience store') return;
             return (
               <TouchableOpacity
                 key={index}

@@ -10,6 +10,7 @@ import {TextInput} from '../components/TextInput';
 import {TEXT_SHADOW} from '../common/utils/styles';
 import {FONT_WEIGHT} from '../common/utils/font';
 import {createFromDatabase} from '../functions/database/createFromDatabase';
+import {signOut} from '../functions/authentication/signOut';
 const SettingsScreen = () => {
   const {destinations, destinationsImage} =
     React.useContext(DestinationsContext);
@@ -20,8 +21,7 @@ const SettingsScreen = () => {
   const [near_by_to, setNearByTo] = useState();
   const handleSubmit = () => {
     const data = {name, brngy, city, recommended_bike, near_by_to};
-    // createFromDatabase(data, 'Suggestions');
-    console.log(data);
+    createFromDatabase(data, 'Suggestions');
   };
   return (
     <React.Fragment>
@@ -67,6 +67,7 @@ const SettingsScreen = () => {
         <Button
           text={'SIGN OUT'}
           containerStyle={{backgroundColor: COLORS.BLUE, margin: SIZE.x10}}
+          onPress={() => signOut()}
         />
       </Screen>
       <BottomNav />

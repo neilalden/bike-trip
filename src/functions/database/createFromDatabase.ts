@@ -8,6 +8,6 @@ export const createFromDatabase = (data, collection) => {
       alert('Success!');
     })
     .catch(error => {
-      alert(error.message);
+      console.error(error.message);
     });
 };

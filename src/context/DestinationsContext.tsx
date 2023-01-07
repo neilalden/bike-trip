@@ -1,13 +1,20 @@
 import React, {useState, createContext, useEffect} from 'react';
+import MapboxDirectionsFactory from '@mapbox/mapbox-sdk/services/directions';
+import {MAPBOX_API_KEY} from '@env';
 import {fetchImage} from '../functions/storage/fetchImage';
 import {
   fetchCollection,
   fetchUser,
 } from '../functions/database/fetchFromDatabase';
+import {lineString as makeLineString} from '@turf/helpers';
+import {useNavigation} from '@react-navigation/native';
+import {ROUTES} from '../common/routes';
+import {NavigationType} from '../common/utils/types';
 
+const directionsClient = MapboxDirectionsFactory({accessToken: MAPBOX_API_KEY});
 export const DestinationsContext = createContext<any>('Default Value');
 const DestinationsContextProvider = props => {
-  const [zoomLevel, setZoomLevel] = React.useState(10);
+  const [zoomLevel, setZoomLevel] = React.useState(13);
   const [userLocation, setUserLocation] = React.useState();
   const [destinations, setDestinations] = useState<Array<any>>();
   const [destinationsImage, setDestinationsImage] = useState<any>();
@@ -17,13 +24,19 @@ const DestinationsContextProvider = props => {
   const [reviews, setReviews] = useState<any>();
   const [reviewers, setReviewers] = useState<any>();
   const [refresh, setRefresh] = useState<any>(false);
+  const [segway, setSegway] = useState<Array<any>>([]);
+  const [params, setParams] = useState<any>();
+  const navigation: NavigationType = useNavigation();
   const startTrip = () => {
     setTripStarted(true);
   };
   const stopTrip = () => {
-    setTripStarted(false);
+    setTripStarted(undefined);
     setDestination(undefined);
+    setSegway([]);
+    setParams(undefined);
     setRoute(undefined);
+    setZoomLevel(13);
   };
   useEffect(() => {
     (async () => {
@@ -74,6 +87,42 @@ const DestinationsContextProvider = props => {
       }
     })();
   }, [reviews, refresh]);
+  useEffect(() => {
+    (async () => {
+      try {
+        if (
+          tripStarted === false ||
+          userLocation === undefined ||
+          params === undefined
+        )
+          return;
+        const reqOptions = {
+          waypoints: [
+            {coordinates: userLocation},
+            {coordinates: params.coordinates},
+            ...segway,
+          ],
+          profile: 'driving',
+          geometries: 'geojson',
+          annotations: ['duration', 'distance', 'speed', 'congestion'],
+          overview: 'full',
+          alternatives: true,
+        };
+        const res = await directionsClient.getDirections(reqOptions).send();
+        const newRoute = makeLineString(
+          res.body.routes[0].geometry.coordinates,
+        );
+        setRoute(newRoute);
+        setDestination(params);
+        setZoomLevel(15);
+        startTrip();
+        navigation.navigate(ROUTES.MAP_SCREEN);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [segway, params]);
   return (
     <DestinationsContext.Provider
       value={{
@@ -93,6 +142,10 @@ const DestinationsContextProvider = props => {
         reviews,
         reviewers,
         setRefresh,
+        segway,
+        setSegway,
+        params,
+        setParams,
       }}>
       {props.children}
     </DestinationsContext.Provider>

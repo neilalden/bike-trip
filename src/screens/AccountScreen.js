@@ -1,4 +1,11 @@
-import {StyleSheet, Text, View, ScrollView} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 import Screen from '../components/Screen';
 import {DestinationsContext} from '../context/DestinationsContext';
@@ -10,10 +17,25 @@ import {AuthContext} from '../context/AuthContext';
 import {STARS} from '../common/constants/ratings';
 import Icon from '../components/Icon';
 import IMAGES from '../common/images';
+import {ROUTES} from '../common/routes';
+import {useNavigation} from '@react-navigation/native';
 
 const AccountScreen = () => {
-  const {reviewers, reviews} = React.useContext(DestinationsContext);
+  const {reviewers, reviews, destinations, destinationsImage} =
+    React.useContext(DestinationsContext);
   const {user} = React.useContext(AuthContext);
+  const navigation = useNavigation();
+  if (!user) return null;
+  const findDestination = destID => {
+    for (const dest of destinations) {
+      if (dest.id === destID) return dest;
+    }
+    return {};
+  };
+
+  const handlePress = destination => {
+    navigation.navigate(ROUTES.DESTINATION_DETAILS_SCREEN, destination);
+  };
   return (
     <React.Fragment>
       <Screen>
@@ -24,37 +46,44 @@ const AccountScreen = () => {
           </Text>
           {reviews.length > 0 ? (
             <ScrollView>
-              <Text style={[styles.cardTitle, {marginVertical: SIZE.x10}]}>
-                REVIEWS :
-              </Text>
+              <Text style={styles.cardTitle}>REVIEWS :</Text>
               {reviews.map((review, index) => {
                 if (review.userID !== user.uid) return;
+                const destination = findDestination(review.destinationID);
+                const image =
+                  destinationsImage && destinationsImage[destination.id]
+                    ? {uri: destinationsImage[destination.id]}
+                    : IMAGES.ic_app;
                 return (
                   <ScrollView key={index} style={styles.reviewCard}>
-                    <View style={styles.ratingContainer}>
-                      {STARS.map((_, i) => {
-                        if (i < review.rate) {
-                          return (
-                            <Icon
-                              size={SIZE.x20}
-                              source={IMAGES.ic_star_fill}
-                              key={i}
-                            />
-                          );
-                        } else {
-                          return (
-                            <Icon
-                              size={SIZE.x20}
-                              source={IMAGES.ic_star}
-                              key={i}
-                            />
-                          );
-                        }
-                      })}
-                    </View>
-                    <Text style={styles.textSecondaryTitle}>
-                      {review.review}
-                    </Text>
+                    <TouchableOpacity onPress={() => handlePress(destination)}>
+                      <Image source={image} style={styles.cardImage} />
+                      <Text style={styles.cardTitle}>{destination.name}</Text>
+                      <View style={styles.ratingContainer}>
+                        {STARS.map((_, i) => {
+                          if (i < review.rate) {
+                            return (
+                              <Icon
+                                size={SIZE.x20}
+                                source={IMAGES.ic_star_fill}
+                                key={i}
+                              />
+                            );
+                          } else {
+                            return (
+                              <Icon
+                                size={SIZE.x20}
+                                source={IMAGES.ic_star}
+                                key={i}
+                              />
+                            );
+                          }
+                        })}
+                      </View>
+                      <Text style={styles.textSecondaryTitle}>
+                        {review.review}
+                      </Text>
+                    </TouchableOpacity>
                   </ScrollView>
                 );
               })}
@@ -79,6 +108,13 @@ const styles = StyleSheet.create({
     color: COLORS.BLACK,
     fontSize: SIZE.x16,
   },
+  cardImage: {
+    height: SIZE.x150,
+    width: SIZE.p100,
+  },
+  cardDescriptionContainer: {
+    margin: SIZE.x10,
+  },
   card: {
     width: SIZE.p96,
     margin: SIZE.x10,
@@ -86,11 +122,6 @@ const styles = StyleSheet.create({
     height: WINDOW_HEIGHT * 0.8,
     backgroundColor: COLORS.WHITE,
     alignSelf: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.8,
-    shadowRadius: 1,
   },
 
   cardTitle: {
@@ -124,7 +155,7 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.8,
     shadowRadius: 1,
-    maxHeight: SIZE.x200,
+    maxHeight: SIZE.x250,
     minHeight: SIZE.x50,
   },
 });

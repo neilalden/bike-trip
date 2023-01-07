@@ -38,6 +38,8 @@ const DestinationDetailsScreen = props => {
     destinationsImage,
     reviews,
     setRefresh,
+    segway,
+    setParams,
   } = React.useContext(DestinationsContext);
   const {user} = React.useContext(AuthContext);
 
@@ -84,34 +86,37 @@ const DestinationDetailsScreen = props => {
     }
   };
   const handlePress = () => {
-    (async () => {
-      try {
-        if (started === false || userLocation === undefined) return;
-        const reqOptions = {
-          waypoints: [
-            {coordinates: userLocation},
-            // {coordinates: params.coordinates},
-            {coordinates: [userLocation[0] + 0.002, userLocation[1] + 0.001]},
-          ],
-          profile: 'driving',
-          geometries: 'geojson',
-          annotations: ['duration', 'distance', 'speed', 'congestion'],
-          overview: 'full',
-          alternatives: true,
-        };
-        const res = await directionsClient.getDirections(reqOptions).send();
-        const newRoute = makeLineString(
-          res.body.routes[0].geometry.coordinates,
-        );
-        setRoute(newRoute);
-      } catch (e) {
-        console.error(e.body.message);
-      }
-    })();
-    setDestination(params);
-    setZoomLevel(16);
-    startTrip();
-    navigation.navigate(ROUTES.MAP_SCREEN);
+    setParams(params);
+    return;
+    // (async () => {
+    //   try {
+    //     if (started === false || userLocation === undefined) return;
+    //     const reqOptions = {
+    //       waypoints: [
+    //         {coordinates: userLocation},
+    //         {coordinates: params.coordinates},
+    //         ...segway,
+    //       ],
+    //       profile: 'driving',
+    //       geometries: 'geojson',
+    //       annotations: ['duration', 'distance', 'speed', 'congestion'],
+    //       overview: 'full',
+    //       alternatives: true,
+    //     };
+    //     const res = await directionsClient.getDirections(reqOptions).send();
+    //     const newRoute = makeLineString(
+    //       res.body.routes[0].geometry.coordinates,
+    //     );
+    //     setRoute(newRoute);
+    //   } catch (e) {
+    //     console.error(e.body.message);
+    //   }
+    // })();
+    // setDestination(params);
+    // setZoomLevel(16);
+    // setParams(params);
+    // startTrip();
+    // navigation.navigate(ROUTES.MAP_SCREEN);
   };
 
   const image =
@@ -177,42 +182,44 @@ const DestinationDetailsScreen = props => {
             </View>
           </View>
           {reviews.length > 0 ? (
-            <ScrollView>
+            <React.Fragment>
               <Text style={[styles.cardTitle, {margin: SIZE.x10}]}>
                 REVIEWS
               </Text>
-              {reviews.map((review, index) => {
-                if (review.destinationID !== params.id) return;
-                return (
-                  <ScrollView key={index} style={styles.reviewCard}>
-                    <View style={styles.ratingContainer}>
-                      {STARS.map((_, i) => {
-                        if (i < review.rate) {
-                          return (
-                            <Icon
-                              size={SIZE.x20}
-                              source={IMAGES.ic_star_fill}
-                              key={i}
-                            />
-                          );
-                        } else {
-                          return (
-                            <Icon
-                              size={SIZE.x20}
-                              source={IMAGES.ic_star}
-                              key={i}
-                            />
-                          );
-                        }
-                      })}
-                    </View>
-                    <Text style={styles.textSecondaryTitle}>
-                      {review.review}
-                    </Text>
-                  </ScrollView>
-                );
-              })}
-            </ScrollView>
+              <ScrollView>
+                {reviews.map((review, index) => {
+                  if (review.destinationID !== params.id) return;
+                  return (
+                    <ScrollView key={index} style={styles.reviewCard}>
+                      <View style={styles.ratingContainer}>
+                        {STARS.map((_, i) => {
+                          if (i < review.rate) {
+                            return (
+                              <Icon
+                                size={SIZE.x20}
+                                source={IMAGES.ic_star_fill}
+                                key={i}
+                              />
+                            );
+                          } else {
+                            return (
+                              <Icon
+                                size={SIZE.x20}
+                                source={IMAGES.ic_star}
+                                key={i}
+                              />
+                            );
+                          }
+                        })}
+                      </View>
+                      <Text style={styles.textSecondaryTitle}>
+                        {review.review}
+                      </Text>
+                    </ScrollView>
+                  );
+                })}
+              </ScrollView>
+            </React.Fragment>
           ) : null}
         </View>
         <View style={styles.writeReviewCard}>
@@ -254,8 +261,7 @@ const getDistance = async (userLocation, destination) => {
   const reqOptions = {
     waypoints: [
       {coordinates: userLocation},
-      //   {coordinates: destination.coordinates},
-      {coordinates: [userLocation[0] + 0.002, userLocation[1] + 0.001]},
+      {coordinates: destination.coordinates},
     ],
     profile: 'driving',
     geometries: 'geojson',
@@ -288,7 +294,7 @@ const styles = StyleSheet.create({
   card: {
     width: SIZE.p96,
     margin: SIZE.x10,
-    height: WINDOW_HEIGHT * 0.8,
+    minHeight: WINDOW_HEIGHT * 0.8,
     backgroundColor: COLORS.WHITE,
     alignSelf: 'center',
     elevation: 5,
